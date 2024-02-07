@@ -4,14 +4,14 @@
 
 package frc.robot.subsystems;
 
-import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.NeutralMode;
-import com.ctre.phoenix.motorcontrol.can.TalonSRX;
-import com.kauailabs.navx.frc.AHRS;
+import com.ctre.phoenix6.controls.DutyCycleOut;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.playingwithfusion.CANVenom.ControlMode;
+// import com.kauailabs.navx.frc.AHRS;
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMaxLowLevel;
-import com.revrobotics.SparkMaxPIDController;
-import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+import com.revrobotics.SparkPIDController;
+import com.revrobotics.CANSparkLowLevel.MotorType;
 
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
@@ -24,18 +24,19 @@ import frc.robot.utils.Constants.DriveTrain.DriveMode;
 
 public class DriveTrain extends SubsystemBase {
   // declare our variables
-  private TalonSRX frontL;
-  private TalonSRX frontR;
-  private TalonSRX backL;
-  private TalonSRX backR;
+  private TalonFX frontL;
+  private TalonFX frontR;
+  private TalonFX backL;
+  private TalonFX backR;
 
   private CANSparkMax motorOne;
   private CANSparkMax motorTwo;
 
-  private SparkMaxPIDController oneController;
-  private SparkMaxPIDController twoController;
+  private SparkPIDController oneController;
+  private SparkPIDController twoController;
 
   private DriveMode driveMode = DriveMode.ArcadeDrive;
+  private DutyCycleOut m_request;
 
   DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(2.2462);
   double kS = 1.1867;
@@ -45,19 +46,19 @@ public class DriveTrain extends SubsystemBase {
 
   boolean isIntake = true;
   double motorSpeedsRPM = 2000;
-  double[] pidM1Vals = [0,0,0];
+  double[] pidM1Vals = {0,0,0};
 
   double kMaxSpeedMetersPerSecond = 3;
   public static final double kRamseteB = 2;
   public static final double kRamseteZeta = 0.7;
-  AHRS navX = new AHRS(Port.kMXP, (byte) 50);
+  // AHRS navX = new AHRS(Port.kMXP, (byte) 50);
 
   /** Creates a new DriveTrain. */
   public DriveTrain() {
-    frontL = new TalonSRX(Constants.ID.DRIVETRAIN_FRONT_LEFT);
-    frontR = new TalonSRX(Constants.ID.DRIVETRAIN_FRONT_RIGHT);
-    backL = new TalonSRX(Constants.ID.DRIVETRAIN_BACK_LEFT);
-    backR = new TalonSRX(Constants.ID.DRIVETRAIN_BACK_RIGHT);
+    frontL = new TalonFX(Constants.ID.DRIVETRAIN_FRONT_LEFT);
+    frontR = new TalonFX(Constants.ID.DRIVETRAIN_FRONT_RIGHT);
+    backL = new TalonFX(Constants.ID.DRIVETRAIN_BACK_LEFT);
+    backR = new TalonFX(Constants.ID.DRIVETRAIN_BACK_RIGHT);
 
     motorOne = new CANSparkMax(3, MotorType.kBrushless);
     motorTwo = new CANSparkMax(1, MotorType.kBrushless);
@@ -76,7 +77,8 @@ public class DriveTrain extends SubsystemBase {
     twoController.setI(0.0);
     twoController.setD(0.0);
 
-    // frontL.
+    m_request = new DutyCycleOut(0);
+
     backL.follow(frontL);
     backR.follow(frontR);
 
@@ -85,10 +87,10 @@ public class DriveTrain extends SubsystemBase {
     frontR.setInverted(false);
     backR.setInverted(false);
 
-    frontL.setNeutralMode(NeutralMode.Brake);
-    frontR.setNeutralMode(NeutralMode.Brake);
-    backL.setNeutralMode(NeutralMode.Brake);
-    backR.setNeutralMode(NeutralMode.Brake);
+    frontL.setNeutralMode(NeutralModeValue.Brake);
+    frontR.setNeutralMode(NeutralModeValue.Brake);
+    backL.setNeutralMode(NeutralModeValue.Brake);
+    backR.setNeutralMode(NeutralModeValue.Brake);
 
   }
 
@@ -169,18 +171,18 @@ public class DriveTrain extends SubsystemBase {
   }
 
   private void tankDrive(double leftSpeed, double rightSpeed) {
-    frontL.set(ControlMode.PercentOutput, leftSpeed);
-    frontR.set(ControlMode.PercentOutput, rightSpeed);
+    frontL.setControl(m_request.withOutput(leftSpeed));
+    frontR.setControl(m_request.withOutput(rightSpeed));
   }
 
   private void arcadeDrive(double x, double y) {
-    frontL.set(ControlMode.PercentOutput, y - x);
-    frontR.set(ControlMode.PercentOutput, y + x);
+    frontL.setControl(m_request.withOutput(y - x)); // (ControlMode.PercentOutput, y - x);
+    frontR.setControl(m_request.withOutput(y + x)); // (ControlMode.PercentOutput, y + x);
   }
 
   public void stop() {
-    frontL.set(ControlMode.PercentOutput, 0.0);
-    frontR.set(ControlMode.PercentOutput, 0.0);
+    frontL.setControl(m_request.withOutput(0));
+    frontR.setControl(m_request.withOutput(0));
   }
 
   public DriveMode getDriveMode() {
