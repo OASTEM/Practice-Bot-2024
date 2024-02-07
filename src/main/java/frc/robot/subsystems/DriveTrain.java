@@ -79,9 +79,6 @@ public class DriveTrain extends SubsystemBase {
 
     m_request = new DutyCycleOut(0);
 
-    backL.follow(frontL);
-    backR.follow(frontR);
-
     frontL.setInverted(true);
     backL.setInverted(true);
     frontR.setInverted(false);
@@ -91,7 +88,6 @@ public class DriveTrain extends SubsystemBase {
     frontR.setNeutralMode(NeutralModeValue.Brake);
     backL.setNeutralMode(NeutralModeValue.Brake);
     backR.setNeutralMode(NeutralModeValue.Brake);
-
   }
 
   @Override
@@ -104,17 +100,19 @@ public class DriveTrain extends SubsystemBase {
   }
 
   public void resetEncoders() {
-    frontL.setSelectedSensorPosition(0);
-    frontR.setSelectedSensorPosition(0);
+    frontL.setPosition(0);
+    frontR.setPosition(0);
+    backL.setPosition(0);
+    backR.setPosition(0);
   }
 
-  private double getRightEncoder() {
-    return frontR.getSelectedSensorPosition();
-  }
+  // private double getRightEncoder() {
+  //   return frontR.getSelectedSensorPosition();
+  // }
 
-  private double getLeftEncoder() {
-    return frontL.getSelectedSensorPosition();
-  }
+  // private double getLeftEncoder() {
+  //   return frontL.getSelectedSensorPosition();
+  // }
 
   public double getNativeUnitsFromInches(double inches) {
     return inches * 10.71 / (Math.PI * 6) * 4096;
@@ -173,16 +171,22 @@ public class DriveTrain extends SubsystemBase {
   private void tankDrive(double leftSpeed, double rightSpeed) {
     frontL.setControl(m_request.withOutput(leftSpeed));
     frontR.setControl(m_request.withOutput(rightSpeed));
+    backL.setControl(m_request.withOutput(leftSpeed));
+    backR.setControl(m_request.withOutput(rightSpeed));
   }
 
   private void arcadeDrive(double x, double y) {
     frontL.setControl(m_request.withOutput(y - x)); // (ControlMode.PercentOutput, y - x);
     frontR.setControl(m_request.withOutput(y + x)); // (ControlMode.PercentOutput, y + x);
+    backL.setControl(m_request.withOutput(y - x)); // (ControlMode.PercentOutput, y - x);
+    backR.setControl(m_request.withOutput(y + x)); // (ControlMode.PercentOutput, y + x);
   }
 
   public void stop() {
     frontL.setControl(m_request.withOutput(0));
     frontR.setControl(m_request.withOutput(0));
+    backL.setControl(m_request.withOutput(0));
+    backR.setControl(m_request.withOutput(0));
   }
 
   public DriveMode getDriveMode() {
