@@ -4,11 +4,12 @@
 
 package frc.robot.subsystems;
 
+
+
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.ControlModeValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import com.playingwithfusion.CANVenom.ControlMode;
-// import com.kauailabs.navx.frc.AHRS;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.SparkPIDController;
 import com.revrobotics.CANSparkLowLevel.MotorType;
@@ -16,6 +17,7 @@ import com.revrobotics.CANSparkLowLevel.MotorType;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DutyCycle;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.I2C.Port;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -35,8 +37,9 @@ public class DriveTrain extends SubsystemBase {
   private SparkPIDController oneController;
   private SparkPIDController twoController;
 
-  private DriveMode driveMode = DriveMode.ArcadeDrive;
   private DutyCycleOut m_request;
+
+  private DriveMode driveMode = DriveMode.ArcadeDrive;
 
   DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(2.2462);
   double kS = 1.1867;
@@ -51,7 +54,7 @@ public class DriveTrain extends SubsystemBase {
   double kMaxSpeedMetersPerSecond = 3;
   public static final double kRamseteB = 2;
   public static final double kRamseteZeta = 0.7;
-  // AHRS navX = new AHRS(Port.kMXP, (byte) 50);
+
 
   /** Creates a new DriveTrain. */
   public DriveTrain() {
@@ -88,6 +91,7 @@ public class DriveTrain extends SubsystemBase {
     frontR.setNeutralMode(NeutralModeValue.Brake);
     backL.setNeutralMode(NeutralModeValue.Brake);
     backR.setNeutralMode(NeutralModeValue.Brake);
+
   }
 
   @Override
@@ -95,9 +99,6 @@ public class DriveTrain extends SubsystemBase {
 
   }
 
-  private void getRPM() {
-    
-  }
 
   public void resetEncoders() {
     frontL.setPosition(0);
@@ -105,14 +106,6 @@ public class DriveTrain extends SubsystemBase {
     backL.setPosition(0);
     backR.setPosition(0);
   }
-
-  // private double getRightEncoder() {
-  //   return frontR.getSelectedSensorPosition();
-  // }
-
-  // private double getLeftEncoder() {
-  //   return frontL.getSelectedSensorPosition();
-  // }
 
   public double getNativeUnitsFromInches(double inches) {
     return inches * 10.71 / (Math.PI * 6) * 4096;
@@ -176,17 +169,17 @@ public class DriveTrain extends SubsystemBase {
   }
 
   private void arcadeDrive(double x, double y) {
-    frontL.setControl(m_request.withOutput(y - x)); // (ControlMode.PercentOutput, y - x);
-    frontR.setControl(m_request.withOutput(y + x)); // (ControlMode.PercentOutput, y + x);
-    backL.setControl(m_request.withOutput(y - x)); // (ControlMode.PercentOutput, y - x);
-    backR.setControl(m_request.withOutput(y + x)); // (ControlMode.PercentOutput, y + x);
+    frontL.setControl(m_request.withOutput(y-x));
+    frontR.setControl(m_request.withOutput(y+x));
+    backL.setControl(m_request.withOutput(y-x));
+    backR.setControl(m_request.withOutput(y+x));
   }
 
   public void stop() {
     frontL.setControl(m_request.withOutput(0));
     frontR.setControl(m_request.withOutput(0));
-    backL.setControl(m_request.withOutput(0));
-    backR.setControl(m_request.withOutput(0));
+    frontL.setControl(m_request.withOutput(0));
+    frontR.setControl(m_request.withOutput(0));
   }
 
   public DriveMode getDriveMode() {

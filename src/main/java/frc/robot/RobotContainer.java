@@ -6,7 +6,9 @@ package frc.robot;
 
 import frc.robot.commands.Drive;
 import frc.robot.subsystems.DriveTrain;
+import frc.robot.subsystems.Jevois;
 import frc.robot.subsystems.LED;
+import frc.robot.subsystems.Vision;
 import frc.robot.utils.DualJoystick;
 import frc.robot.utils.Constants.DriveTrain.DriveMode;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -15,6 +17,8 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 
 public class RobotContainer {
   private DriveTrain driveTrain = new DriveTrain();
+  // private Jevois jevois = new Jevois();
+  private Vision averi = new Vision();
 
   private final DualJoystick joysticks = new DualJoystick(0, 1);
   private final JoystickButton button8 = new JoystickButton(joysticks.getRighJoystick(), 2);
